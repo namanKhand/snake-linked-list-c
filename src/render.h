@@ -23,20 +23,38 @@
 #define PANEL_COL  (BOARD_W + 5)
 
 /*
- * Windows console color attributes — low nibble = foreground color.
- * 0=black 1=blue 2=green 3=cyan 4=red 5=magenta 6=yellow 7=gray
- * Add 8 for bright variants (e.g. 0x0A = bright green).
+ * Windows console color attributes.
+ * Byte layout: 0xBF  where B = background nibble, F = foreground nibble.
+ * Background: 0=black 1=blue 2=green 3=cyan 4=red 5=magenta 6=yellow 7=gray
+ *             Add 8 for bright variants (e.g. 0x10 = dark navy, 0x80 = dark gray)
+ * Foreground: same palette (low nibble).
+ *
+ * Board interior uses a dark navy (0x10) background.
+ * Panel uses a dark charcoal (0x80) background.
  */
-#define COL_DEFAULT   0x07   /* gray on black   */
-#define COL_HEAD      0x0A   /* bright green    */
-#define COL_BODY      0x02   /* dark green      */
-#define COL_TAIL      0x06   /* dark yellow     */
-#define COL_FOOD      0x0C   /* bright red      */
-#define COL_WALL      0x08   /* dark gray       */
-#define COL_HDR       0x0B   /* bright cyan     */
-#define COL_ADDR      0x0D   /* bright magenta  */
-#define COL_ARROW     0x0E   /* bright yellow   */
-#define COL_SCORE     0x0F   /* bright white    */
+
+/* General */
+#define COL_DEFAULT   0x07   /* gray on black              */
+
+/* Board interior — dark navy background (high nibble = 1) */
+#define COL_BG        0x10   /* black text on navy — blank cell    */
+#define COL_HEAD      0x1A   /* bright green on navy               */
+#define COL_BODY      0x12   /* dark green on navy                 */
+#define COL_TAIL      0x16   /* dark yellow on navy                */
+#define COL_FOOD      0x1C   /* bright red on navy                 */
+#define COL_WALL      0x17   /* gray on navy (top/bottom walls)    */
+#define COL_SCORE     0x1F   /* bright white on navy               */
+
+/* Panel — dark charcoal background (high nibble = 8) */
+#define COL_PANEL_BG  0x80   /* blank panel cell                   */
+#define COL_HDR       0x8B   /* bright cyan on charcoal            */
+#define COL_ADDR      0x8D   /* bright magenta on charcoal         */
+#define COL_ARROW     0x8E   /* bright yellow on charcoal          */
+
+/* Game-over overlay colors (kept as raw values, named for clarity) */
+#define COL_GAMEOVER_BG   0x4F   /* bright white on red   */
+#define COL_GAMEOVER_MSG  0x0F   /* bright white on black */
+#define COL_GAMEOVER_HINT 0x08   /* dark gray on black    */
 
 /* Set up the console handle, hide cursor, resize window */
 void render_init(void);

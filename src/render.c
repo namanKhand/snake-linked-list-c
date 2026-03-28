@@ -56,10 +56,12 @@ void render_init(void) {
 
     SetConsoleTitleA("Snake — Live Linked List Visualizer");
 
-    /* Fill screen with spaces once to establish a clean slate */
+    /* Fill the board region with the navy background */
     COORD origin = { 0, 0 };
     DWORD written;
     FillConsoleOutputCharacter(hcon, ' ', 120 * 40, origin, &written);
+    /* Paint the whole buffer with the default color first, then we'll
+     * let render_board / render_panel overwrite with their backgrounds. */
     FillConsoleOutputAttribute(hcon, COL_DEFAULT, 120 * 40, origin, &written);
 }
 
@@ -100,9 +102,8 @@ static void draw_border(int score, int level) {
 static void clear_interior(void) {
     for (int y = 1; y <= BOARD_H; y++) {
         goto_xy(1, y);
-        set_color(COL_DEFAULT);
-        /* Print BOARD_W spaces in one go */
-        printf("%*s", BOARD_W, "");
+        set_color(COL_BG);          /* dark navy background */
+        printf("%*s", BOARD_W, ""); /* flood-fill row with navy */
     }
 }
 
@@ -150,11 +151,11 @@ void render_panel(const Snake *s) {
     int col = PANEL_COL;
     int row = 0;
 
-    /* Clear the panel area before redrawing */
+    /* Clear the panel area with the charcoal background */
     for (int r = 0; r < (BOARD_H + 2); r++) {
         goto_xy(col, r);
-        set_color(COL_DEFAULT);
-        printf("                         "); /* 25 spaces */
+        set_color(COL_PANEL_BG);
+        printf("%-25s", ""); /* 25-wide charcoal strip */
     }
 
     char line[64];
@@ -214,12 +215,12 @@ void render_panel(const Snake *s) {
 void render_game_over(int score) {
     int cx = (BOARD_W / 2) - 8;
     int cy = BOARD_H / 2;
-    print_at(cx, cy - 1, 0x4F, "                       ");
-    print_at(cx, cy - 1, 0x4F, "   *** GAME OVER ***   ");
+    print_at(cx, cy - 1, COL_GAMEOVER_BG,   "                       ");
+    print_at(cx, cy - 1, COL_GAMEOVER_BG,   "   *** GAME OVER ***   ");
     char buf[32];
     snprintf(buf, sizeof(buf), "    Final score: %-4d  ", score);
-    print_at(cx, cy,     0x0F, buf);
-    print_at(cx, cy + 1, 0x08, "  Press R to restart   ");
+    print_at(cx, cy,     COL_GAMEOVER_MSG,  buf);
+    print_at(cx, cy + 1, COL_GAMEOVER_HINT, "  R = restart  ESC = quit  ");
     set_color(COL_DEFAULT);
 }
 
