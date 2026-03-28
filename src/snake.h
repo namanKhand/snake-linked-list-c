@@ -27,10 +27,12 @@ typedef struct Node {
 typedef enum { DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT } Direction;
 
 typedef struct {
-    Node      *head;    /* front — grows here        */
-    Node      *tail;    /* back  — shrinks here       */
+    Node      *head;         /* front — grows here        */
+    Node      *tail;         /* back  — shrinks here       */
     int        length;
     Direction  dir;
+    int        total_allocs; /* lifetime malloc() calls   */
+    int        total_frees;  /* lifetime free() calls     */
 } Snake;
 
 /*

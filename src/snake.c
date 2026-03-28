@@ -21,10 +21,12 @@ Snake *snake_create(int x, int y, int init_len) {
     Snake *s = malloc(sizeof(Snake));
     if (!s) return NULL;
 
-    s->head   = NULL;
-    s->tail   = NULL;
-    s->length = 0;
-    s->dir    = DIR_RIGHT;
+    s->head         = NULL;
+    s->tail         = NULL;
+    s->length       = 0;
+    s->dir          = DIR_RIGHT;
+    s->total_allocs = 0;
+    s->total_frees  = 0;
 
     for (int i = init_len - 1; i >= 0; i--) {
         if (!snake_push_head(s, x - i, y)) {
@@ -60,6 +62,7 @@ int snake_push_head(Snake *s, int nx, int ny) {
 
     s->head = node;
     s->length++;
+    s->total_allocs++;
     return 1;
 }
 
@@ -88,6 +91,7 @@ void snake_pop_tail(Snake *s) {
 
     free(old);   /* give the segment back to the heap */
     s->length--;
+    s->total_frees++;
 }
 
 /* ── self collision ──────────────────────────────────────────────────── */
