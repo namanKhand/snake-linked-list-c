@@ -41,6 +41,7 @@ Game *game_create(void) {
 
     g->score = 0;
     g->level = 1;
+    g->bg_index = 0;
     g->state = STATE_PLAYING;
     spawn_food(g);
     return g;
@@ -56,6 +57,7 @@ void game_reset(Game *g) {
     g->snake = snake_create(BOARD_W / 2, BOARD_H / 2, 4);
     g->score = 0;
     g->level = 1;
+    g->bg_index = 0;
     g->state = STATE_PLAYING;
     spawn_food(g);
 }
@@ -108,6 +110,7 @@ void game_update(Game *g) {
         snake_push_head(s, nx, ny);   /* grow: push, no pop */
         g->score++;
         g->level = 1 + g->score / 5; /* level up every 5 points */
+        g->bg_index++;             /* advance to next palette color permanently */
         spawn_food(g);
     } else {
         /* Normal move: push new head, pop old tail */

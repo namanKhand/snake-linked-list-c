@@ -36,7 +36,7 @@ int main(void) {
     }
 
     /* Draw the initial frame before the first tick fires */
-    render_board(g->snake, g->food_x, g->food_y, g->score, g->level);
+    render_board(g->snake, g->food_x, g->food_y, g->score, g->level, g->bg_index);
     render_panel(g->snake);
 
     ULONGLONG last_tick = GetTickCount64();
@@ -53,7 +53,7 @@ int main(void) {
             if (input_key_pressed('R')) {
                 game_reset(g);
                 render_board(g->snake, g->food_x, g->food_y,
-                             g->score, g->level);
+                             g->score, g->level, g->bg_index);
                 render_panel(g->snake);
                 last_tick = GetTickCount64();
             }
@@ -79,7 +79,7 @@ int main(void) {
 
             /* Redraw on every tick — not on every loop iteration */
             render_board(g->snake, g->food_x, g->food_y,
-                         g->score, g->level);
+                         g->score, g->level, g->bg_index);
             render_panel(g->snake);
 
             if (g->state == STATE_DEAD)

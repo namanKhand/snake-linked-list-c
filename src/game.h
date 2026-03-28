@@ -22,8 +22,9 @@ typedef struct {
     int        food_x;
     int        food_y;
     int        score;
-    int        level;   /* speed tier: 1 = slow, increases every 5 points */
+    int        level;        /* speed tier: 1 = slow, increases every 5 points */
     GameState  state;
+    int        bg_index;     /* increments on each eat; selects persistent bg color */
 } Game;
 
 /* Allocate and initialise a new game (snake near center, random food) */

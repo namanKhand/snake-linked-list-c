@@ -71,27 +71,32 @@ void render_init(void) {
  * Draw the border walls using '#' characters.
  * Board cells are offset by 1 so (0,0) game coord → screen (1,1).
  */
-static void draw_border(int score, int level) {
+static void draw_border(int score, int level, WORD bg) {
     char buf[64];
+
+    /* Derive wall color: keep foreground gray (7) but match the bg nibble */
+    WORD wall = (WORD)((bg & 0xF0) | 0x07);
 
     /* Top wall with score embedded */
     snprintf(buf, sizeof(buf), " SCORE:%-4d LEVEL:%-2d ", score, level);
-    print_at(0, 0, COL_WALL, "#");
-    print_at(1, 0, COL_SCORE, buf);
+    print_at(0, 0, wall, "#");
+    /* Score text: bright white on the active background — always readable */
+    WORD score_col = (WORD)((bg & 0xF0) | 0x0F);
+    print_at(1, 0, score_col, buf);
 
     /* Pad remaining top wall cells */
     int used = (int)strlen(buf) + 1;
     for (int x = used; x <= BOARD_W + 1; x++)
-        print_at(x, 0, COL_WALL, "#");
+        print_at(x, 0, wall, "#");
 
     /* Bottom wall */
     for (int x = 0; x <= BOARD_W + 1; x++)
-        print_at(x, BOARD_H + 1, COL_WALL, "#");
+        print_at(x, BOARD_H + 1, wall, "#");
 
     /* Side walls */
     for (int y = 1; y <= BOARD_H; y++) {
-        print_at(0,           y, COL_WALL, "#");
-        print_at(BOARD_W + 1, y, COL_WALL, "#");
+        print_at(0,           y, wall, "#");
+        print_at(BOARD_W + 1, y, wall, "#");
     }
 }
 
@@ -99,37 +104,64 @@ static void draw_border(int score, int level) {
  * Clear the board interior by overwriting every cell with a space.
  * This avoids system("cls") which causes visible flicker.
  */
-static void clear_interior(void) {
+static void clear_interior(WORD bg) {
     for (int y = 1; y <= BOARD_H; y++) {
         goto_xy(1, y);
-        set_color(COL_BG);          /* dark navy background */
-        printf("%*s", BOARD_W, ""); /* flood-fill row with navy */
+        set_color(bg);
+        printf("%*s", BOARD_W, ""); /* flood-fill row with chosen background */
     }
 }
 
-void render_board(const Snake *s, int food_x, int food_y,
-                  int score, int level) {
-    clear_interior();
-    draw_border(score, level);
+/*
+ * Palette of background colors that cycle on each food eat.
+ * Index 0 is the default navy the game starts on.
+ * Each eat advances bg_index by 1; we wrap with modulo.
+ *
+ * High nibble = background color (Windows console):
+ *   0x1. = navy,  0x2. = dark green,  0x4. = dark red,
+ *   0x5. = magenta, 0x6. = dark yellow, 0x3. = dark cyan
+ */
+static const WORD bg_palette[] = {
+    0x10,  /* navy         — default start              */
+    0x20,  /* dark green                                */
+    0x40,  /* dark red                                  */
+    0x50,  /* dark magenta                              */
+    0x60,  /* dark yellow/olive                         */
+    0x30,  /* dark cyan                                 */
+    0x80,  /* dark gray                                 */
+};
+#define NUM_BG_COLORS  (int)(sizeof(bg_palette) / sizeof(bg_palette[0]))
 
-    /* Food — bright red '@' */
-    print_at(food_x + 1, food_y + 1, COL_FOOD, "@");
+void render_board(const Snake *s, int food_x, int food_y,
+                  int score, int level, int bg_index) {
+    /* Pick the persistent background from the palette; wraps around */
+    WORD bg = bg_palette[bg_index % NUM_BG_COLORS];
+
+    clear_interior(bg);
+    draw_border(score, level, bg);
 
     /*
-     * Draw body from tail toward head so the head glyph always wins
-     * if two segments overlap (shouldn't happen in valid play, but safe).
+     * Single snake color: bright white (0x0F) on the active background.
+     * Using one foreground nibble for every segment guarantees the snake
+     * is always visible regardless of which palette background is active.
+     * Glyph distinction (O vs o) still separates head from body.
      */
+    WORD snake_color = (WORD)((bg & 0xF0) | 0x0F);
+
+    /* Food — bright red fg; adapt to current bg */
+    WORD food_color = (WORD)((bg & 0xF0) | 0x0C);
+    print_at(food_x + 1, food_y + 1, food_color, "@");
+
+    /* Body: draw tail→head so head glyph always wins on overlap */
     const Node *n = s->tail;
     while (n && n != s->head) {
-        /* Tail node gets a lighter color so it stands out */
-        WORD color = (n == s->tail) ? COL_TAIL : COL_BODY;
-        print_at(n->x + 1, n->y + 1, color, "o");
+        print_at(n->x + 1, n->y + 1, snake_color, "o");
         n = n->prev;
     }
 
-    /* Head — bright green 'O', visually distinct */
+    /* Head — same color, distinct glyph */
     if (s->head)
-        print_at(s->head->x + 1, s->head->y + 1, COL_HEAD, "O");
+        print_at(s->head->x + 1, s->head->y + 1, snake_color, "O");
 }
 
 /* ── linked list panel ───────────────────────────────────────────────── */

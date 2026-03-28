@@ -38,6 +38,7 @@
 
 /* Board interior — dark navy background (high nibble = 1) */
 #define COL_BG        0x10   /* black text on navy — blank cell    */
+#define COL_BG_FLASH  0x50   /* kept for compat; palette used instead      */
 #define COL_HEAD      0x1A   /* bright green on navy               */
 #define COL_BODY      0x12   /* dark green on navy                 */
 #define COL_TAIL      0x16   /* dark yellow on navy                */
@@ -65,7 +66,7 @@ void render_init(void);
  * (system("cls") causes flicker — this approach does not).
  */
 void render_board(const Snake *s, int food_x, int food_y,
-                  int score, int level);
+                  int score, int level, int bg_index);
 
 /*
  * Draw the live linked-list panel on the right side.
