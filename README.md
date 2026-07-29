@@ -67,3 +67,8 @@ src/
   game.h  / game.c    — game state, collision, food logic
   main.c              — fixed-timestep game loop
 ```
+
+
+## Team
+
+Built at a hackathon by [@namanKhand](https://github.com/namanKhand) and [@Rd0806](https://github.com/Rd0806).
